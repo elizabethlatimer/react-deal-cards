@@ -6,11 +6,12 @@ import axios from 'axios';
 const BASE_URL = "https://deckofcardsapi.com/api/deck"
 
 function DeckContainer() {
-  console.log("Deck container being rendered")
   const [numberDrawn, setNumberDrawn] = useState(0);
   const [currentDeck, setCurrentDeck] = useState([]);
+  const [isDrawing, setIsDrawing] = useState(false)
+
   const deckId = useRef();
-  console.log(numberDrawn)
+  const timerId = useRef();
 
   useEffect(() => {
     async function getDeckId() {
@@ -21,8 +22,7 @@ function DeckContainer() {
     }
 
     getDeckId();
-  }, []
-  );
+  }, []);
 
   useEffect(() => {
     async function drawCard() {
@@ -34,20 +34,41 @@ function DeckContainer() {
 
       setCurrentDeck(oldDeck => ([...oldDeck, { image, value, suit }]))
     }
-
-    drawCard();
-  }, [numberDrawn]
-  );
+    if (numberDrawn !== 0 && numberDrawn < 52) {
+      drawCard();
+    }
+  }, [numberDrawn, timerId]);
 
   function handleClick() {
-    setNumberDrawn(n => n + 1);
+    if (!isDrawing) {
+      setIsDrawing(true);
+      timerId.current = setInterval(() => {
+        setNumberDrawn(n => n + 1);
+      }, 500);
+    } else {
+      setIsDrawing(false)
+      clearInterval(timerId.current);
+    }
+  }
+
+  function cardList() {
+    return currentDeck.map(card => (<Card
+      key={`${card.value} of ${card.suit}`}
+      image={card.image}
+      value={card.value}
+      suit={card.suit} />))
   }
 
   return (
     <div className="Deck-Container">
-      <button onClick={handleClick}>Gimme a Card</button>
-      {numberDrawn > 52 ? <p>Error: No Cards Remaining</p> : null}
-      {currentDeck.map(card => <Card key={`${card.value} of ${card.suit}`} image={card.image} value={card.value} suit={card.suit}/>)}
+      {numberDrawn >= 52
+        ? <p>No Cards Remaining</p>
+        : <button onClick={handleClick}>{
+            !isDrawing
+            ? "Start Drawing"
+            : "Stop Drawing"}
+          </button>}
+      {cardList()}
     </div>
   )
 
