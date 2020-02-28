@@ -64,10 +64,10 @@ function DeckContainer() {
       {numberDrawn >= 52
         ? <p>No Cards Remaining</p>
         : <button onClick={handleClick}>{
-            !isDrawing
+          !isDrawing
             ? "Start Drawing"
             : "Stop Drawing"}
-          </button>}
+        </button>}
       {cardList()}
     </div>
   )
